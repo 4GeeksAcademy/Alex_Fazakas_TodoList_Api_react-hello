@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 
 // Create your first component
@@ -12,15 +12,85 @@ const Home = () => {
 
 	const handleKeyPress = (e) => {
 		if (e.key === "Enter") {
-			setTodos([...todos, inputValue]);
+			
+			let body= todos.concat([{"label": inputValue, "done": false}])
+			
+			fetch('https://playground.4geeks.com/apis/fake/todos/user/alexfazakas', {
+		  method: "PUT",
+		  body : JSON.stringify(body),
+		  headers: {
+			"Content-Type": "application/json"
+		  }
+		})
+		.then(resp => {
+			if (!resp.ok) throw Error(`La response no es ok`)
+			return resp.json(); // (regresa una promesa) will try to parse the result as json as return a promise that you can .then for results
+		})
+		.then(data => {
+			setTodos(body);
 			setInputValue("");
+		})
+		.catch(error => {
+			//manejo de errores
+			alert(`Ha habido un error, intentalo mas tarde`)
+			console.log(error);
+		});
 		}
+
+			
+	
+
 	};
 
 	const handleDelete = (index) => {
 		const updatedTodos = todos.filter((_, i) => i !== index);
-		setTodos(updatedTodos);
+		
+
+		
+			
+			fetch('https://playground.4geeks.com/apis/fake/todos/user/alexfazakas', {
+		  method: "PUT",
+		  body : JSON.stringify(updatedTodos),
+		  headers: {
+			"Content-Type": "application/json"
+		  }
+		})
+		.then(resp => {
+			if (!resp.ok) throw Error(`La response no es ok`)
+			return resp.json(); // (regresa una promesa) will try to parse the result as json as return a promise that you can .then for results
+		})
+		.then(data => {
+			setTodos(updatedTodos);
+			
+		})
+		.catch(error => {
+			//manejo de errores
+			alert(`Ha habido un error, intentalo mas tarde`)
+			console.log(error);
+		});
 	};
+
+	useEffect(()=> {
+		fetch('https://playground.4geeks.com/apis/fake/todos/user/alexfazakas', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(resp => {
+        if (!resp.ok) throw Error(`La response no es ok`)
+        return resp.json(); // (regresa una promesa) will try to parse the result as json as return a promise that you can .then for results
+    })
+    .then(data => {
+        setTodos(data)
+        console.log(data); //esto imprimirá en la consola el objeto exacto recibido del servidor
+    })
+    .catch(error => {
+        //manejo de errores
+		alert(`Ha habido un error, intentalo mas tarde`)
+        console.log(error);
+    });
+	}, [])
 
 	return (
 		<div className="container mt-5">
@@ -37,7 +107,7 @@ const Home = () => {
 				</li>
 				{todos.map((item, index) => (
 					<li key={index}>
-						{item}{" "}
+						{item.label}{" "}
 						<i
 							className="fas fa-trash-alt"
 							onClick={() => handleDelete(index)}
